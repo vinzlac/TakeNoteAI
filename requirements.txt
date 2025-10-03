@@ -1,0 +1,19 @@
+# TakeNote AI - Dépendances Python
+
+# Transcription audio
+openai-whisper>=20231117
+
+# Traitement audio
+ffmpeg-python>=0.2.0
+
+# Utilitaires
+pathlib2>=2.3.7; python_version<"3.4"
+
+# Optimisé pour Mac M4 Pro (Apple Silicon)
+# PyTorch avec support Metal Performance Shaders (MPS)
+torch>=2.0.0
+torchaudio>=2.0.0
+
+# Note: Sur Mac M4 Pro, PyTorch utilise automatiquement MPS pour l'accélération GPU
+# Les versions CUDA ne sont pas nécessaires sur Apple Silicon
+
