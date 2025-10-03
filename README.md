@@ -7,6 +7,7 @@ Application Python pour convertir les fichiers audio en texte via Whisper, avec 
 - **Conversion audio** : Support des formats MP3, M4A, WAV, FLAC, AAC
 - **Nettoyage automatique** : Réduction de bruit, normalisation, optimisation pour Whisper
 - **Transcription intelligente** : Utilisation de Whisper avec détection automatique de langue
+- **🎤 Identification des locuteurs** : Détection automatique des changements de locuteurs
 - **Formats de sortie multiples** : TXT, JSON, SRT, VTT
 - **Scripts modulaires** : Utilisation individuelle ou orchestrée
 
@@ -19,6 +20,10 @@ Application Python pour convertir les fichiers audio en texte via Whisper, avec 
 ### Optimisations Mac M4 Pro
 - **PyTorch avec MPS** : Accélération GPU native via Metal Performance Shaders
 - **ARM64 optimisé** : Versions natives pour Apple Silicon
+
+### Identification des locuteurs (optionnel)
+- **Token Hugging Face** : Requis pour l'identification avancée des locuteurs
+- **Acceptation des conditions** : Nécessaire pour accéder aux modèles pyannote.audio
 
 ### Installation de FFmpeg
 
@@ -73,6 +78,37 @@ pip install -r requirements.txt
 ```bash
 # Vérifier que MPS est disponible
 python3 -c "import torch; print(f'MPS available: {torch.backends.mps.is_available()}')"
+```
+
+### Configuration pour l'identification des locuteurs
+
+#### 1. Créer un token Hugging Face
+1. Allez sur [https://huggingface.co/settings/tokens](https://huggingface.co/settings/tokens)
+2. Créez un nouveau token (type: **Read**)
+3. Copiez le token généré
+
+#### 2. Configurer le token
+```bash
+# Méthode 1: Via huggingface-cli (recommandée)
+huggingface-cli login
+
+# Méthode 2: Via script Python
+python3 setup_huggingface_token.py
+
+# Méthode 3: Variable d'environnement
+export HUGGINGFACE_HUB_TOKEN="votre_token_ici"
+```
+
+#### 3. Accepter les conditions d'utilisation
+Pour utiliser l'identification avancée des locuteurs, acceptez les conditions sur ces liens :
+
+- [pyannote/speaker-diarization-3.1](https://huggingface.co/pyannote/speaker-diarization-3.1)
+- [pyannote/segmentation-3.0](https://huggingface.co/pyannote/segmentation-3.0)
+- [pyannote/speaker-diarization-community-1](https://huggingface.co/pyannote/speaker-diarization-community-1)
+
+#### 4. Tester la configuration
+```bash
+python3 test_hf_token.py
 ```
 
 ### Vérification de l'installation
@@ -155,6 +191,30 @@ python3 audio_transcriber.py input.mp3 -f srt
 python3 audio_transcriber.py --list-models
 ```
 
+#### 4. Identification des locuteurs
+```bash
+# Script principal (recommandé) - Diarisation propre
+python3 whisper_clean_diarization.py audio.mp3
+
+# Avec options avancées
+python3 whisper_clean_diarization.py audio.mp3 -m large -l fr -f json
+
+# Script hybride (si pyannote.audio configuré)
+python3 whisper_speaker_diarization.py audio.mp3 -m base -f txt
+
+# Script simplifié (basique)
+python3 whisper_simple_diarization.py audio.mp3 --sensitivity high
+```
+
+#### 5. Téléchargement de modèles Whisper
+```bash
+# Télécharger un modèle spécifique
+python3 download_whisper_model.py large
+
+# Télécharger le modèle medium
+python3 download_whisper_medium.py
+```
+
 ## ⚙️ Options avancées
 
 ### Modèles Whisper
@@ -179,16 +239,23 @@ python3 audio_transcriber.py --list-models
 
 ```
 TakeNoteAI/
-├── takenote.py              # Script principal d'orchestration
-├── audio_converter.py       # Conversion audio
-├── audio_cleaner.py         # Nettoyage audio
-├── audio_transcriber.py     # Transcription Whisper
-├── run.sh                   # Script de lancement rapide
-├── install.sh               # Script d'installation automatique
-├── test_setup.py            # Script de test d'installation
-├── requirements.txt         # Dépendances Python
-├── .gitignore              # Fichiers à ignorer
-└── README.md               # Documentation
+├── takenote.py                      # Script principal d'orchestration
+├── audio_converter.py               # Conversion audio
+├── audio_cleaner.py                 # Nettoyage audio
+├── audio_transcriber.py             # Transcription Whisper
+├── whisper_clean_diarization.py     # 🎤 Identification des locuteurs (recommandé)
+├── whisper_speaker_diarization.py   # Identification hybride (Whisper + pyannote.audio)
+├── whisper_simple_diarization.py    # Identification basique
+├── download_whisper_model.py        # Téléchargement de modèles Whisper
+├── download_whisper_medium.py       # Téléchargement du modèle medium
+├── setup_huggingface_token.py       # Configuration du token HF
+├── test_hf_token.py                 # Test de la configuration HF
+├── run.sh                           # Script de lancement rapide
+├── install.sh                       # Script d'installation automatique
+├── test_setup.py                    # Script de test d'installation
+├── requirements.txt                 # Dépendances Python
+├── .gitignore                      # Fichiers à ignorer
+└── README.md                       # Documentation
 ```
 
 ## 🔧 Dépannage
@@ -222,11 +289,46 @@ Error: Invalid data found
 - Réduire la qualité de conversion
 - Vérifier l'espace disque disponible
 
+### Problèmes d'identification des locuteurs
+
+#### Erreur de token Hugging Face
+```
+401 Client Error: Unauthorized
+```
+**Solution** : Vérifier que le token est correctement configuré avec `python3 test_hf_token.py`
+
+#### Erreur de conditions d'utilisation
+```
+403 Client Error: Forbidden
+```
+**Solution** : Accepter les conditions d'utilisation sur les 3 liens pyannote.audio mentionnés plus haut
+
+#### Erreur torchcodec/FFmpeg
+```
+torchcodec is not installed correctly
+```
+**Solution** : Utiliser le script `whisper_clean_diarization.py` qui évite ces dépendances
+
+#### Un seul locuteur détecté
+**Solutions** :
+- Utiliser `--sensitivity high` avec `whisper_simple_diarization.py`
+- Vérifier que l'audio contient bien plusieurs locuteurs
+- Ajuster les paramètres de détection dans le script
+
 ## 🎯 Exemples d'utilisation
 
 ### Transcription d'une réunion
 ```bash
 python3 takenote.py reunion.m4a -m medium -l fr -f srt
+```
+
+### Transcription avec identification des locuteurs
+```bash
+# Méthode recommandée (sans dépendances)
+python3 whisper_clean_diarization.py reunion.mp3 -m large -f json
+
+# Méthode avancée (avec pyannote.audio)
+python3 whisper_speaker_diarization.py reunion.mp3 -m base -f txt
 ```
 
 ### Conversion rapide
@@ -239,12 +341,27 @@ python3 takenote.py podcast.mp3 -m tiny --no-clean
 python3 takenote.py audio.wav --analyze-only
 ```
 
+### Configuration complète pour l'identification des locuteurs
+```bash
+# 1. Configurer le token
+huggingface-cli login
+
+# 2. Tester la configuration
+python3 test_hf_token.py
+
+# 3. Utiliser l'identification
+python3 whisper_clean_diarization.py audio.mp3 -m large
+```
+
 ## 📝 Notes
 
 - Les modèles Whisper sont téléchargés automatiquement au premier usage
 - Les fichiers temporaires sont supprimés automatiquement
 - Utilisez `--keep-intermediate` pour conserver les fichiers intermédiaires
 - Le nettoyage audio améliore significativement la qualité de transcription
+- **Identification des locuteurs** : Le script `whisper_clean_diarization.py` est recommandé pour éviter les problèmes de dépendances
+- **Token Hugging Face** : Nécessaire uniquement pour l'identification avancée avec pyannote.audio
+- **Conditions d'utilisation** : Doivent être acceptées sur les 3 liens pyannote.audio pour utiliser l'identification hybride
 
 ## 🤝 Contribution
 

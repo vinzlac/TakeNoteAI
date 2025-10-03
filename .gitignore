@@ -39,19 +39,24 @@ venv.bak/
 takenote_*/
 temp_*/
 
-# Fichiers audio (optionnel - décommentez si vous ne voulez pas versionner les fichiers audio)
-# *.mp3
-# *.m4a
-# *.wav
-# *.flac
-# *.aac
-# *.ogg
+# Fichiers audio
+*.mp3
+*.m4a
+*.wav
+*.flac
+*.aac
+*.ogg
 
 # Fichiers de transcription générés
 *_transcript_*.txt
 *_transcript_*.json
 *_transcript_*.srt
 *_transcript_*.vtt
+
+# Fichiers de transcription avec locuteurs
+*_speakers_*.txt
+*_speakers_*.json
+*_speakers_*.srt
 
 # Fichiers convertis/nettoyés
 *_converted.mp3

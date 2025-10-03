@@ -7,8 +7,8 @@ en supprimant le bruit, normalisant le volume et optimisant la qualité.
 import os
 import sys
 import argparse
+import subprocess
 from pathlib import Path
-import ffmpeg
 
 
 def clean_audio(input_path, output_path=None, noise_reduction=True, normalize=True):
@@ -36,54 +36,59 @@ def clean_audio(input_path, output_path=None, noise_reduction=True, normalize=Tr
         output_path = Path(output_path)
     
     try:
-        # Configuration de base pour le nettoyage
-        input_stream = ffmpeg.input(str(input_path))
+        # Construction de la commande FFmpeg
+        cmd = [
+            'ffmpeg',
+            '-i', str(input_path),
+            '-y'  # Overwrite output
+        ]
         
         # Filtres de nettoyage
         filters = []
         
-        # Réduction de bruit (si activée)
-        if noise_reduction:
-            filters.append("afftdn=nf=-25")  # Réduction de bruit FFT
-        
-        # Normalisation du volume (si activée)
-        if normalize:
-            filters.append("loudnorm=I=-16:TP=-1.5:LRA=11")  # Normalisation LUFS
-        
-        # Filtre de haute qualité pour la parole
+        # Filtres de base pour la parole (toujours appliqués)
         filters.extend([
             "highpass=f=80",  # Filtre passe-haut pour éliminer les basses fréquences
             "lowpass=f=8000",  # Filtre passe-bas pour éliminer les hautes fréquences
-            "compand=attacks=0.3:decays=0.8:points=-90/-90|-60/-60|-40/-20|-30/-8:gain=5"  # Compression dynamique
         ])
         
-        # Application des filtres
+        # Réduction de bruit (si activée)
+        if noise_reduction:
+            filters.append("anlmdn=s=0.0001:p=0.02")  # Réduction de bruit non-locale
+        
+        # Normalisation du volume (si activée)
+        if normalize:
+            filters.append("volume=2.0")  # Normalisation simple
+        
+        # Ajouter les filtres à la commande
         if filters:
-            audio = input_stream.audio.filter("|".join(filters))
-        else:
-            audio = input_stream.audio
+            cmd.extend(['-af', ','.join(filters)])
         
         # Configuration de sortie optimisée pour Whisper
-        (
-            ffmpeg
-            .output(
-                audio,
-                str(output_path),
-                acodec='mp3',
-                ac=1,  # Mono
-                ar=16000,  # 16kHz optimal pour Whisper
-                ab='64k',  # Bitrate réduit mais suffisant
-                **{'q:a': 2}
-            )
-            .overwrite_output()
-            .run(quiet=True)
-        )
+        cmd.extend([
+            '-acodec', 'mp3',
+            '-ac', '1',  # Mono
+            '-ar', '16000',  # 16kHz optimal pour Whisper
+            '-ab', '64k',  # Bitrate réduit mais suffisant
+            '-q:a', '2',
+            str(output_path)
+        ])
+        
+        # Exécution de la commande
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        
+        if result.returncode != 0:
+            print(f"❌ Erreur FFmpeg: {result.stderr}")
+            raise subprocess.CalledProcessError(result.returncode, cmd, result.stderr)
         
         print(f"✅ Nettoyage réussi: {input_path.name} -> {output_path.name}")
         return str(output_path)
         
-    except ffmpeg.Error as e:
+    except subprocess.CalledProcessError as e:
         print(f"❌ Erreur lors du nettoyage: {e}")
+        raise
+    except Exception as e:
+        print(f"❌ Erreur inattendue: {e}")
         raise
 
 
@@ -100,8 +105,16 @@ def analyze_audio(input_path):
         raise FileNotFoundError(f"Le fichier {input_path} n'existe pas")
     
     try:
-        # Récupération des informations du fichier
-        probe = ffmpeg.probe(str(input_path))
+        # Récupération des informations du fichier avec ffprobe
+        cmd = ['ffprobe', '-v', 'quiet', '-print_format', 'json', '-show_format', '-show_streams', str(input_path)]
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        
+        if result.returncode != 0:
+            print(f"❌ Erreur lors de l'analyse: {result.stderr}")
+            return
+        
+        import json
+        probe = json.loads(result.stdout)
         audio_stream = next((stream for stream in probe['streams'] if stream['codec_type'] == 'audio'), None)
         
         if not audio_stream:
@@ -135,7 +148,7 @@ def analyze_audio(input_path):
         else:
             print("✅ Fichier audio de bonne qualité")
             
-    except ffmpeg.Error as e:
+    except Exception as e:
         print(f"❌ Erreur lors de l'analyse: {e}")
 
 

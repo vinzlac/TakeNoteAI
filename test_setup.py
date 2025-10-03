@@ -45,8 +45,8 @@ def test_ffmpeg():
 def test_python_packages():
     """Teste l'installation des packages Python."""
     packages = {
-        'whisper': 'openai-whisper',
-        'ffmpeg': 'ffmpeg-python'
+        'whisper': 'whisper',
+        'ffmpeg': 'ffmpeg'
     }
     
     all_good = True
@@ -128,7 +128,7 @@ def main():
     if all_passed:
         print("🎉 Tous les tests sont passés! TakeNote AI est prêt à utiliser.")
         print("\n📖 Pour commencer:")
-        print("   python takenote.py votre_fichier.mp3")
+        print("   python3 takenote.py votre_fichier.mp3")
     else:
         print("⚠️  Certains tests ont échoué. Consultez le README.md pour l'installation.")
         sys.exit(1)
