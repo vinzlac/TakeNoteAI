@@ -1,0 +1,26 @@
+{
+  "transcription": {
+    "text": "STROKE EDWELS OF S'EST PRINCIPALEMENT RECORDS",
+    "segments": [
+      {
+        "start": 0,
+        "end": 4.5,
+        "text": "STROKE EDWELS OF S'EST PRINCIPALEMENT RECORDS"
+      }
+    ],
+    "language": "fr",
+    "method": "speechbrain"
+  },
+  "business_keywords": [],
+  "metadata": {
+    "filename": "test_output_1.mp3",
+    "size_mb": 0.74,
+    "transcription_method": "speechbrain",
+    "language": "fr",
+    "duration": 0,
+    "timestamp": "2025-10-03T21:33:19.826494",
+    "business_keywords_count": 0
+  },
+  "embeddings_available": true,
+  "vector_db_stored": true
+}

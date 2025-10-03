@@ -1,0 +1,122 @@
+---
+description: Analysis and summarization script usage
+---
+
+# Analysis and Summarization Scripts
+
+## Core Analysis Scripts
+
+### Question Answering
+- [simple_audio_analyzer.py](mdc:simple_audio_analyzer.py) - Main Q&A engine
+- [ask_audio.py](mdc:ask_audio.py) - Interactive question interface
+- [demo_questions.py](mdc:demo_questions.py) - Predefined question demonstrations
+
+### Summarization
+- [audio_summarizer.py](mdc:audio_summarizer.py) - Multi-format summary generation
+- [resume_audio.py](mdc:resume_audio.py) - Interactive summary interface
+- [show_summary.py](mdc:show_summary.py) - Terminal-only summary display
+
+## Analysis Categories
+
+### Predefined Question Categories
+```python
+RISK_KEYWORDS = ["risque", "problème", "danger", "critique", "urgent", "bloquant"]
+ACTION_KEYWORDS = ["action", "tâche", "faire", "implémenter", "développer", "mettre en place"]
+TEAM_KEYWORDS = ["équipe", "personne", "responsable", "Vincent", "Malek", "Zven", "Mako"]
+DEADLINE_KEYWORDS = ["date", "échéance", "deadline", "fin", "milestone", "sprint"]
+ARCHITECTURE_KEYWORDS = ["architecture", "système", "infrastructure", "Azure", "Microsoft"]
+STANDARDS_KEYWORDS = ["standard", "norme", "règle", "convention", "bonne pratique"]
+```
+
+### Summary Types
+1. **Executive** (`executif`): High-level overview, key decisions, risks
+2. **Business** (`business`): Business impact, stakeholders, deadlines
+3. **Detailed** (`detaille`): Technical details, implementation, architecture
+
+## Usage Patterns
+
+### Direct Analysis
+```bash
+python simple_audio_analyzer.py transcription.json "Quels risques sont identifiés ?"
+```
+
+### Interactive Analysis
+```bash
+python ask_audio.py  # Interactive file selection and questioning
+```
+
+### Batch Analysis
+```bash
+python demo_questions.py  # Runs predefined questions
+```
+
+### Summary Generation
+```bash
+python audio_summarizer.py transcription.json --type executif
+python audio_summarizer.py transcription.json --type business
+python audio_summarizer.py transcription.json --type detaille
+python audio_summarizer.py transcription.json --type all  # All types
+```
+
+## Output Formats
+
+### Question Answering Output
+```
+🎯 Question: Quels risques sont identifiés ?
+
+📊 Réponse basée sur l'analyse de la transcription:
+
+🕐 00:00:04 - 00:00:08
+"il y a un risque parce qu'il y a une dépendance"
+Mots-clés détectés: risque, dépendance
+
+🕐 00:00:15 - 00:00:19  
+"le risque c'est qu'on va perdre du temps"
+Mots-clés détectés: risque, temps
+```
+
+### Summary Output
+```
+📋 RÉSUMÉ EXÉCUTIF
+==================
+
+🎯 Objectif: Migration vers Azure avec JIT
+
+⚠️ Risques identifiés:
+- Dépendance critique avec JIT
+- Perte de temps potentielle
+- Complexité de la migration
+
+🚀 Actions prioritaires:
+- Coordination avec JIT
+- Planification des échéances
+- Mise en place des équipes
+
+📅 Échéances:
+- Sprint 1: Analyse technique
+- Sprint 2: Développement
+- Sprint 3: Tests et déploiement
+```
+
+## Integration with Workflows
+
+### In Complete Workflows
+Analysis and summarization are automatically triggered in:
+- [rag_complete_workflow.py](mdc:rag_complete_workflow.py)
+- [rag_ultra_simple.py](mdc:rag_ultra_simple.py)
+
+### Standalone Usage
+All analysis scripts can be used independently with existing JSON transcriptions.
+
+## Performance Considerations
+
+### For Large Transcriptions
+- Analysis time scales linearly with text length
+- Memory usage is minimal (text-based processing)
+- No GPU requirements for analysis scripts
+
+### Optimization Tips
+- Use targeted questions instead of full analysis when possible
+- Cache frequently asked questions
+- Batch multiple questions in single script execution
+- Use appropriate summary type for intended audience

@@ -1,0 +1,90 @@
+---
+description: Data management and cleanup operations
+---
+
+# Data Management Guide
+
+## File Management Scripts
+
+### Cleanup Operations
+- [clean_rag_data.py](mdc:clean_rag_data.py) - Complete RAG data cleanup
+- [rag_accumulation_manager.py](mdc:rag_accumulation_manager.py) - Smart accumulation vs cleanup decisions
+- [analyze_cleanup_errors.py](mdc:analyze_cleanup_errors.py) - Diagnose cleanup issues
+
+### Usage Patterns
+
+#### Complete Cleanup (Before New RAG)
+```bash
+python clean_rag_data.py --all
+```
+
+#### Selective Cleanup
+```bash
+python clean_rag_data.py --chromadb  # Only ChromaDB
+python clean_rag_data.py --json      # Only JSON files
+python clean_rag_data.py --summaries # Only summary files
+```
+
+#### Smart Accumulation Decision
+```bash
+python rag_accumulation_manager.py --should-accumulate
+python rag_accumulation_manager.py --recommendations
+```
+
+## Data Accumulation Strategy
+
+### When to Accumulate
+- Building knowledge base over time
+- Cross-document analysis needed
+- Maintaining organizational context
+- Quality score > 0.8
+
+### When to Clean
+- Testing different models/parameters
+- Quality score < 0.8
+- Project separation needed
+- Development/debugging phase
+
+## Quality Assessment
+
+Quality is calculated based on:
+- Text length: >10,000 chars = 0.9 score
+- Segment count: >10 segments = bonus
+- Content richness: technical terms, proper nouns
+
+### Quality Thresholds
+- **0.9**: Excellent (>10k chars + >10 segments)
+- **0.7**: Good (>5k chars + >5 segments)
+- **0.5**: Average (>1k chars)
+- **0.3**: Poor (<1k chars)
+
+## Common Cleanup Errors
+
+### Expected Errors (Normal)
+```
+❌ Erreur lors de la suppression de keywords_generated_*.txt: [Errno 2] No such file or directory
+```
+These are normal when files don't exist or were already deleted.
+
+### Error Resolution
+- Check if files actually exist before deletion
+- Use `Path.exists()` checks
+- Implement safe deletion patterns
+- Log successful deletions vs. missing files separately
+
+## File Organization
+
+### Input Files
+- `*.mp3` - Source audio files
+- `keywords_*.txt` - Custom keyword lists
+
+### Output Files
+- `*_advanced_rag_*.json` - Complete transcriptions
+- `resume_*.md` - Generated summaries
+- `keywords_generated_*.txt` - Extracted keywords
+- `workflow_results_*.json` - Execution metadata
+
+### Temporary Files
+- `chroma_db/` - Vector database storage
+- `*.py.backup` - Script backups during optimization
+- `*_config.json` - Configuration files

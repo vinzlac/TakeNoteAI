@@ -1,0 +1,79 @@
+---
+globs: *.py
+---
+
+# Python Code Standards for TakeNoteAI
+
+## Mac M4 Optimization Requirements
+
+All Python scripts must include M4 optimizations:
+
+```python
+import torch
+import os
+
+# Optimisations M4
+if torch.backends.mps.is_available():
+    torch.set_num_threads(14)
+    os.environ['OMP_NUM_THREADS'] = '14'
+    os.environ['MKL_NUM_THREADS'] = '14'
+    os.environ['NUMEXPR_NUM_THREADS'] = '14'
+    print("🚀 Optimisations Mac M4 activées")
+```
+
+## Device Detection Pattern
+
+Use this pattern for device selection:
+```python
+def _get_optimal_device(self):
+    """Détecte le device optimal pour M4."""
+    if torch.backends.mps.is_available():
+        print("✅ GPU M4 détecté via MPS")
+        return "mps"
+    elif torch.cuda.is_available():
+        print("✅ GPU CUDA détecté")
+        return "cuda"
+    else:
+        print("⚠️  Utilisation CPU uniquement")
+        return "cpu"
+```
+
+## Error Handling Standards
+
+Always use safe file operations:
+```python
+def safe_remove_file(file_path):
+    """Supprime un fichier en toute sécurité."""
+    try:
+        if file_path.exists():
+            file_path.unlink()
+            print(f"✅ Supprimé: {file_path.name}")
+            return True
+        else:
+            return True  # Pas d'erreur si le fichier n'existe pas
+    except Exception as e:
+        print(f"❌ Erreur lors de la suppression de {file_path.name}: {e}")
+        return False
+```
+
+## Logging Standards
+
+Use consistent emoji-based logging:
+- 🚀 for initialization and optimization
+- ✅ for success messages
+- ❌ for errors
+- ⚠️ for warnings
+- 🔧 for configuration
+- 📊 for analysis results
+- 🎉 for completion
+
+## Subprocess Usage
+
+When calling other scripts, always use:
+```python
+result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+if result.returncode == 0:
+    print("✅ Success")
+else:
+    print(f"❌ Error: {result.stderr}")
+```

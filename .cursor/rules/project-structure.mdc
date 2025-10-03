@@ -1,0 +1,52 @@
+---
+alwaysApply: true
+---
+
+# TakeNoteAI Project Structure
+
+This is an advanced RAG (Retrieval-Augmented Generation) project for audio transcription and analysis, optimized for Mac M4.
+
+## Core Architecture
+
+The main entry points are:
+- [advanced_rag_transcription.py](mdc:advanced_rag_transcription.py) - Main RAG transcription with SpeechBrain/Whisper
+- [advanced_rag_transcription_with_keywords.py](mdc:advanced_rag_transcription_with_keywords.py) - RAG with custom keywords support
+- [rag_complete_workflow.py](mdc:rag_complete_workflow.py) - Complete workflow automation script
+- [rag_ultra_simple.py](mdc:rag_ultra_simple.py) - Simplified RAG script for daily use
+
+## Key Components
+
+### Transcription Models
+- **Whisper**: Primary transcription model (base, medium, large)
+- **SpeechBrain**: Alternative model (asr-crdnn-commonvoice-fr)
+- **M4 Optimizations**: MPS (Metal Performance Shaders) for GPU acceleration
+
+### Analysis & Processing
+- [simple_audio_analyzer.py](mdc:simple_audio_analyzer.py) - Question-answering on transcriptions
+- [audio_summarizer.py](mdc:audio_summarizer.py) - Generate executive/business/detailed summaries
+- [generate_keywords_from_transcription.py](mdc:generate_keywords_from_transcription.py) - Extract technical keywords
+
+### Vector Database
+- **ChromaDB**: Stores embeddings in [chroma_db/](mdc:chroma_db/) directory
+- **Sentence Transformers**: For semantic embeddings
+- **KeyBERT**: For business keyword extraction
+
+## File Patterns
+
+### Input Files
+- `*.mp3` - Audio files for transcription
+- `keywords_*.txt` - Custom keyword files
+
+### Output Files
+- `*_advanced_rag_*.json` - Complete transcription with metadata
+- `resume_*.md` - Generated summaries
+- `keywords_generated_*.txt` - Extracted keywords
+- `workflow_results_*.json` - Workflow execution results
+
+## Mac M4 Optimizations
+
+All scripts include M4 optimizations:
+- GPU acceleration via MPS
+- 14 CPU threads utilization
+- 48GB unified memory optimization
+- Environment variables for parallel processing

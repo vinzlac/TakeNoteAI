@@ -93,3 +93,26 @@ test_output/
 *.bak
 *.backup
 
+# Répertoires centralisés
+output/
+input/
+
+# Base de données vectorielle ChromaDB
+chroma_db/
+
+# Modèles pré-entraînés (téléchargés automatiquement)
+model_checkpoints/
+pretrained_models/
+
+# Fichiers RAG générés (maintenant dans output/)
+*_advanced_rag_*.json
+workflow_results_*.json
+all_keywords_analysis.json
+benchmark_results.json
+rag_accumulation_config.json
+keywords_generated_*.txt
+resume_*.md
+m4_config.py
+test_*.json
+test_*.mp3
+

@@ -1,0 +1,109 @@
+---
+description: Keyword extraction and filtering techniques
+---
+
+# Keyword Extraction Guide
+
+## Keyword Extraction Scripts
+
+### Main Extraction Scripts
+- [generate_keywords_from_transcription.py](mdc:generate_keywords_from_transcription.py) - Primary extraction tool
+- [extract_technical_keywords.py](mdc:extract_technical_keywords.py) - Technical pattern detection
+- [extract_unknown_keywords.py](mdc:extract_unknown_keywords.py) - Unknown term identification
+
+## Extraction Process
+
+### Quality Filtering
+The system filters out common French words and false positives:
+
+```python
+# Common French words to exclude
+common_french_words = {
+    "le", "la", "les", "de", "du", "des", "un", "une", "et", "ou",
+    "donc", "alors", "puis", "ensuite", "enfin", "parce", "parce que",
+    "est-ce", "qu'est-ce", "voilà", "voici", "c'est", "il y a"
+}
+```
+
+### Technical Pattern Detection
+
+#### Acronyms (2-6 uppercase letters)
+```python
+if re.match(r'^[A-Z]{2,6}$', word):
+    return True  # GIT, JIT, API, etc.
+```
+
+#### Proper Nouns (Initial capital, 3+ chars)
+```python
+if word[0].isupper() and len(word) >= 3:
+    return True  #  Azure, Microsoft, etc.
+```
+
+#### Versions (V1, V2, v1.0)
+```python
+if re.match(r'^v\d+$', word.lower()) or re.match(r'^[a-z]+\d+$', word.lower()):
+    return True  # V1, V2, version1, etc.
+```
+
+#### Compound Technical Terms
+```python
+if '-' in word and any(c.isupper() for c in word):
+    return True  # go-live, code-review, etc.
+```
+
+## Keyword Categories
+
+### Filtered Out
+- Common French words: "Parce", "Enfin", "est-ce", "Moi"
+- Short pronouns: "moi", "toi", "lui"
+- Articles and prepositions
+- Generic technical terms: "système", "application"
+
+## Usage Patterns
+
+### Generate Keywords from Transcription
+```bash
+python generate_keywords_from_transcription.py transcription.json --top 25
+```
+
+### Output Format
+```
+# Mots-clés générés automatiquement à partir de la transcription
+go-live
+```
+
+### Integration with RAG
+```bash
+python advanced_rag_transcription_with_keywords.py audio.mp3 \
+  --keywords-file keywords_generated_transcription.txt
+```
+
+## Quality Improvements
+
+### Historical Issues Resolved
+1. **False Positives**: Filtered out "Parce", "Enfin", "est-ce" as proper nouns
+2. **Case Sensitivity**: Preserved original casing for better proper noun detection
+3. **Compound Words**: Added detection for hyphenated technical terms
+4. **Version Detection**: Improved regex patterns for version identification
+
+### Confidence Scoring
+Keywords are scored based on:
+- Occurrence frequency
+- Technical pattern match
+- Length and complexity
+- Exclusion from common words
+
+## Best Practices
+
+### For Better Keyword Extraction
+1. Use high-quality transcriptions (complete, accurate)
+2. Apply appropriate filtering thresholds
+3. Review generated keywords before use
+4. Combine with domain-specific keyword lists
+5. Regular updates based on new terminology
+
+### For RAG Integration
+1. Use extracted keywords as initial prompts for Whisper
+2. Store keywords in ChromaDB metadata
+3. Combine with manual keyword curation
+4. Monitor transcription quality improvements

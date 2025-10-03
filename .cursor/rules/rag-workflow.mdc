@@ -1,0 +1,54 @@
+---
+description: RAG workflow and usage patterns
+---
+
+# RAG Workflow Guide
+
+## Complete Workflow Scripts
+
+### Main Workflow Scripts
+- [rag_complete_workflow.py](mdc:rag_complete_workflow.py) - Full automated workflow
+- [rag_ultra_simple.py](mdc:rag_ultra_simple.py) - Simplified workflow for daily use
+- [rag_simple.py](mdc:rag_simple.py) - Intermediate complexity workflow
+
+### Usage Patterns
+
+#### Basic Usage
+```bash
+python rag_ultra_simple.py audio.mp3
+```
+
+#### Advanced Usage with Keywords
+```bash
+python rag_complete_workflow.py audio.mp3 --keywords "Azure,Microsoft"
+```
+
+#### Custom Analysis
+```bash
+python rag_complete_workflow.py audio.mp3 --questions "Quels sont les risques ?" "Actions prioritaires ?"
+```
+
+## Workflow Steps
+
+1. **Transcription RAG**: Audio → JSON with segments and metadata
+2. **Keyword Generation**: Extract technical keywords automatically
+3. **Analysis**: Answer predefined or custom questions
+4. **Summarization**: Generate executive/business/detailed summaries
+
+## Output Structure
+
+Each workflow generates:
+- Transcription JSON with timestamps and segments
+- Keyword extraction results
+- Risk analysis and action items
+- Multiple summary formats
+- Performance metrics and execution results
+
+## Mac M4 Performance
+
+Expected performance on Mac M4:
+- 1-minute audio: ~15-20 seconds
+- 5-minute audio: ~45-60 seconds
+- 10-minute audio: ~90-120 seconds
+
+All scripts include automatic M4 optimization detection and configuration.

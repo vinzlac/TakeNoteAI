@@ -1,0 +1,150 @@
+---
+description: Common issues and troubleshooting guide
+---
+
+# Troubleshooting Guide
+
+## Common Issues & Solutions
+
+### 1. SpeechBrain Errors
+
+#### ModuleDict Decoder Error
+```
+❌ Erreur SpeechBrain lors de la transcription: 'ModuleDict' object has no attribute 'decoder'
+```
+**Solution**: Use the working model `speechbrain/asr-crdnn-commonvoice-fr` with `transcribe_file()` method.
+
+#### 401 Authentication Error
+```
+❌ Erreur SpeechBrain: 401 Client Error
+```
+**Solution**: Run `huggingface-cli login` and provide your Hugging Face token.
+
+### 2. ChromaDB Metadata Errors
+
+#### List Metadata Error
+```
+❌ Expected metadata value to be a str, int, float, bool, SparseVector, or None, got ['Microsoft', 'Azure'] which is a list
+```
+**Solution**: Convert lists to strings:
+```python
+if self.custom_keywords:
+    metadata["custom_keywords"] = ", ".join(self.custom_keywords)
+```
+
+### 3. File Cleanup Errors
+
+#### Missing File Errors
+```
+❌ Erreur lors de la suppression de keywords_generated_*.txt: [Errno 2] No such file or directory
+```
+**Status**: These are normal and non-critical. Files don't exist or were already deleted.
+
+### 4. Keyword Extraction Issues
+
+#### Common Words as Keywords
+```
+❌ "Parce", "Enfin", "est-ce" identified as technical keywords
+```
+**Solution**: Enhanced filtering in [generate_keywords_from_transcription.py](mdc:generate_keywords_from_transcription.py)
+
+#### Missing Technical Terms
+```
+❌ "JIT", "Zven", "Mako" not detected as keywords
+```
+**Solution**: Improved regex patterns and case preservation.
+
+### 5. Performance Issues
+
+#### Slow Transcription
+**Solutions**:
+- Enable M4 optimizations with MPS
+- Use appropriate model size (base vs medium vs large)
+- Check audio quality and format
+
+#### Memory Issues
+**Solutions**:
+- Clean ChromaDB regularly
+- Use smaller batch sizes
+- Monitor system resources
+
+## Debugging Tools
+
+### Diagnostic Scripts
+- [analyze_cleanup_errors.py](mdc:analyze_cleanup_errors.py) - Cleanup error analysis
+- [detect_m4_capabilities.py](mdc:detect_m4_capabilities.py) - System capability detection
+- [explain_quality_score.py](mdc:explain_quality_score.py) - Quality score breakdown
+
+### Status Checking
+```bash
+python clean_rag_data.py --status  # Check data status
+python rag_accumulation_manager.py --should-accumulate  # Accumulation decision
+```
+
+## Warning Suppression
+
+### Global Warning Suppression
+```python
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning)
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+warnings.filterwarnings("ignore", category=FutureWarning)
+```
+
+### Specific Module Warnings
+```python
+warnings.filterwarnings("ignore", category=UserWarning, module="torchaudio")
+warnings.filterwarnings("ignore", category=UserWarning, module="whisper")
+warnings.filterwarnings("ignore", category=UserWarning, module="speechbrain")
+```
+
+## Error Recovery
+
+### Failed Transcription
+1. Check audio file format and quality
+2. Try different model (Whisper vs SpeechBrain)
+3. Verify system resources and permissions
+4. Clean and retry with fresh ChromaDB
+
+### Corrupted Data
+1. Run complete cleanup: `python clean_rag_data.py --all`
+2. Verify file permissions and disk space
+3. Check for file locks or concurrent access
+4. Restart and retry
+
+### Model Loading Issues
+1. Verify internet connection for model downloads
+2. Check Hugging Face authentication
+3. Clear model cache if corrupted
+4. Use alternative model or fallback
+
+## Performance Monitoring
+
+### Expected Performance (Mac M4)
+- 1-minute audio: ~15-20 seconds
+- 5-minute audio: ~45-60 seconds  
+- 10-minute audio: ~90-120 seconds
+
+### Performance Degradation
+- Check CPU/GPU utilization
+- Monitor memory usage
+- Verify MPS optimization is active
+- Consider model size vs. accuracy trade-offs
+
+## Log Analysis
+
+### Success Indicators
+```
+✅ Transcription terminée
+✅ Embeddings générés
+✅ Données stockées dans ChromaDB
+🚀 Optimisations Mac M4 activées
+```
+
+### Error Indicators
+```
+❌ Erreur lors de la transcription
+⚠️  Utilisation CPU uniquement
+❌ Erreur lors de la suppression
+⚠️  Avertissement SpeechBrain
+```

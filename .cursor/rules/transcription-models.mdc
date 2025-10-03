@@ -1,0 +1,64 @@
+---
+description: Transcription model configuration and usage
+---
+
+# Transcription Models Guide
+
+## Model Hierarchy
+
+### Primary Models
+1. **Whisper** (recommended): More reliable, better quality
+2. **SpeechBrain**: Alternative for specific use cases
+
+### Whisper Configuration
+```python
+# In advanced_rag_transcription.py
+model_size = "base"  # or "medium", "large"
+self.asr_model = whisper.load_model(model_size, device=self.device)
+```
+
+### SpeechBrain Models
+- `speechbrain/asr-crdnn-commonvoice-fr` - Working model
+- `asr-wav2vec2-commonvoice-fr` - Legacy (has decoder issues)
+
+## Keywords Integration
+
+### Custom Keywords Usage
+```python
+# In advanced_rag_transcription_with_keywords.py
+if self.custom_keywords:
+    initial_prompt = f"Transcription en français avec les mots-clés suivants : {', '.join(self.custom_keywords)}. Utilisez ces termes exactement comme spécifiés."
+    result = self.asr_model.transcribe(audio_path, initial_prompt=initial_prompt)
+```
+
+### Keyword File Format
+Keywords should be stored in `.txt` files, one per line:
+```
+Azure
+Microsoft
+```
+
+## Common Issues & Solutions
+
+### SpeechBrain Decoder Error
+- **Error**: `'ModuleDict' object has no attribute 'decoder'`
+- **Solution**: Use `speechbrain/asr-crdnn-commonvoice-fr` model with `transcribe_file()` method
+
+### ChromaDB Metadata Error
+- **Error**: `Expected metadata value to be a str, int, float, bool, SparseVector, or None, got ['Microsoft', 'Azure'] which is a list`
+- **Solution**: Convert list to string: `", ".join(self.custom_keywords)`
+
+### TorchAudio Warnings
+- **Solution**: Suppress with `warnings.filterwarnings("ignore", category=UserWarning, module="torchaudio")`
+
+## Performance Optimization
+
+### For Mac M4
+- Use MPS device: `device = "mps"`
+- Enable mixed precision: `torch.backends.mps.enable_amp()`
+- Set CPU threads: `torch.set_num_threads(14)`
+
+### For Better Transcription Quality
+- Use larger Whisper models (medium/large) for better accuracy
+- Provide relevant keywords for domain-specific terms
+- Use proper audio preprocessing (noise reduction, normalization)

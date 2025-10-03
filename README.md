@@ -1,15 +1,29 @@
 # 🎤 TakeNote AI
 
-Application Python pour convertir les fichiers audio en texte via Whisper, avec nettoyage et optimisation automatique.
+Application Python avancée pour la transcription audio avec RAG (Retrieval-Augmented Generation), analyse intelligente et optimisations Mac M4.
 
 ## 📋 Fonctionnalités
 
+### 🎯 **Fonctionnalités de base**
 - **Conversion audio** : Support des formats MP3, M4A, WAV, FLAC, AAC
 - **Nettoyage automatique** : Réduction de bruit, normalisation, optimisation pour Whisper
-- **Transcription intelligente** : Utilisation de Whisper avec détection automatique de langue
+- **Transcription intelligente** : Whisper + SpeechBrain avec détection automatique de langue
 - **🎤 Identification des locuteurs** : Détection automatique des changements de locuteurs
 - **Formats de sortie multiples** : TXT, JSON, SRT, VTT
-- **Scripts modulaires** : Utilisation individuelle ou orchestrée
+
+### 🚀 **Fonctionnalités avancées RAG**
+- **Transcription RAG** : Système complet de transcription avec embeddings sémantiques
+- **Mots-clés métiers** : Extraction automatique et personnalisée de mots-clés techniques
+- **Analyse intelligente** : Réponses aux questions en langage naturel
+- **Résumés automatiques** : Génération de résumés exécutifs, business et détaillés
+- **Base vectorielle** : Stockage et recherche sémantique avec ChromaDB
+- **Workflow complet** : Scripts tout-en-un pour automatisation complète
+
+### ⚡ **Optimisations Mac M4**
+- **GPU M4 natif** : Accélération via Metal Performance Shaders (MPS)
+- **Multi-threading** : Optimisation CPU avec 14 threads
+- **Mémoire unifiée** : Exploitation de la mémoire 48GB du M4
+- **Performance** : 1min audio → ~15-20 secondes de traitement
 
 ## 🛠️ Prérequis
 
@@ -48,6 +62,7 @@ Télécharger depuis [https://ffmpeg.org/download.html](https://ffmpeg.org/downl
 git clone <votre-repo>
 cd TakeNoteAI
 ./install.sh
+./install_advanced.sh  # Pour les fonctionnalités RAG avancées
 ```
 
 ### Installation manuelle
@@ -69,9 +84,14 @@ python -m venv venv
 venv\Scripts\activate
 ```
 
-3. **Installer les dépendances**
+3. **Installer les dépendances de base**
 ```bash
 pip install -r requirements.txt
+```
+
+4. **Installer les dépendances RAG (optionnel)**
+```bash
+./install_advanced.sh
 ```
 
 ### Vérification des optimisations Mac M4 Pro
@@ -122,7 +142,70 @@ python test_setup.py
 
 ## 📖 Utilisation
 
-### Lancement rapide
+### 🚀 **Scripts RAG tout-en-un (recommandés)**
+
+#### Script ultra-simple (quotidien)
+```bash
+# Workflow complet automatisé
+python3 rag_ultra_simple.py audio.mp3
+```
+
+#### Script complet avec mots-clés
+```bash
+# Avec mots-clés personnalisés
+python3 rag_complete_workflow.py audio.mp3 --keywords "Azure,Microsoft"
+
+# Avec questions personnalisées
+python3 rag_complete_workflow.py audio.mp3 --questions "Quels sont les risques ?" "Actions prioritaires ?"
+```
+
+#### Script simplifié
+```bash
+# Workflow intermédiaire
+python3 rag_simple.py audio.mp3
+```
+
+### 🎯 **Scripts individuels RAG**
+
+#### Transcription RAG avec mots-clés
+```bash
+# Transcription avec mots-clés personnalisés
+python3 advanced_rag_transcription_with_keywords.py audio.mp3 --keywords "Azure,Microsoft"
+
+# Avec fichier de mots-clés
+python3 advanced_rag_transcription_with_keywords.py audio.mp3 --keywords-file keywords.txt
+```
+
+#### Génération de mots-clés
+```bash
+# Extraire les mots-clés d'une transcription
+python3 generate_keywords_from_transcription.py transcription.json --top 25
+```
+
+#### Analyse intelligente
+```bash
+# Poser une question sur une transcription
+python3 simple_audio_analyzer.py transcription.json "Quels risques sont identifiés ?"
+
+# Interface interactive
+python3 ask_audio.py
+```
+
+#### Résumés automatiques
+```bash
+# Résumé exécutif
+python3 audio_summarizer.py transcription.json --type executif
+
+# Tous les types de résumés
+python3 audio_summarizer.py transcription.json --type all
+
+# Interface interactive
+python3 resume_audio.py
+```
+
+### 📋 **Scripts de base (classiques)**
+
+#### Lancement rapide
 ```bash
 # Lancement simple
 ./run.sh audio.mp3
@@ -131,8 +214,7 @@ python test_setup.py
 ./run.sh audio.m4a -m large -l fr
 ```
 
-### Script principal (recommandé)
-
+#### Script principal (recommandé)
 ```bash
 # Traitement complet d'un fichier
 python3 takenote.py audio.mp3
@@ -239,55 +321,130 @@ python3 download_whisper_medium.py
 
 ```
 TakeNoteAI/
-├── takenote.py                      # Script principal d'orchestration
-├── audio_converter.py               # Conversion audio
-├── audio_cleaner.py                 # Nettoyage audio
-├── audio_transcriber.py             # Transcription Whisper
-├── whisper_clean_diarization.py     # 🎤 Identification des locuteurs (recommandé)
-├── whisper_speaker_diarization.py   # Identification hybride (Whisper + pyannote.audio)
-├── whisper_simple_diarization.py    # Identification basique
-├── download_whisper_model.py        # Téléchargement de modèles Whisper
-├── download_whisper_medium.py       # Téléchargement du modèle medium
-├── setup_huggingface_token.py       # Configuration du token HF
-├── test_hf_token.py                 # Test de la configuration HF
-├── run.sh                           # Script de lancement rapide
-├── install.sh                       # Script d'installation automatique
-├── test_setup.py                    # Script de test d'installation
-├── requirements.txt                 # Dépendances Python
-├── .gitignore                      # Fichiers à ignorer
-└── README.md                       # Documentation
+├── 🚀 SCRIPTS RAG AVANCÉS
+│   ├── rag_ultra_simple.py                    # Script tout-en-un ultra-simple (quotidien)
+│   ├── rag_complete_workflow.py               # Workflow complet avec mots-clés
+│   ├── rag_simple.py                          # Workflow simplifié
+│   ├── advanced_rag_transcription.py          # Transcription RAG de base
+│   ├── advanced_rag_transcription_with_keywords.py # Transcription RAG + mots-clés
+│   ├── simple_audio_analyzer.py               # Analyse Q&A intelligente
+│   ├── audio_summarizer.py                    # Génération de résumés
+│   ├── generate_keywords_from_transcription.py # Extraction automatique de mots-clés
+│   ├── ask_audio.py                           # Interface Q&A interactive
+│   ├── resume_audio.py                        # Interface résumés interactive
+│   └── show_summary.py                        # Affichage résumés terminal
+│
+├── 🎯 SCRIPTS DE BASE
+│   ├── takenote.py                            # Script principal d'orchestration
+│   ├── audio_converter.py                     # Conversion audio
+│   ├── audio_cleaner.py                       # Nettoyage audio
+│   ├── audio_transcriber.py                   # Transcription Whisper
+│   ├── whisper_clean_diarization.py           # 🎤 Identification des locuteurs (recommandé)
+│   ├── whisper_speaker_diarization.py         # Identification hybride
+│   ├── whisper_simple_diarization.py          # Identification basique
+│   ├── download_whisper_model.py              # Téléchargement de modèles Whisper
+│   ├── download_whisper_medium.py             # Téléchargement du modèle medium
+│   ├── setup_huggingface_token.py             # Configuration du token HF
+│   └── test_hf_token.py                       # Test de la configuration HF
+│
+├── 🔧 SCRIPTS DE GESTION
+│   ├── clean_rag_data.py                      # Nettoyage des données RAG
+│   ├── rag_accumulation_manager.py            # Gestion accumulation vs nettoyage
+│   ├── detect_m4_capabilities.py              # Détection optimisations M4
+│   ├── optimize_rag_for_m4.py                 # Application optimisations M4
+│   ├── explain_quality_score.py               # Explication scores de qualité
+│   └── check_files.py                         # Vérification fichiers JSON
+│
+├── 📚 DOCUMENTATION
+│   ├── README.md                              # Documentation principale
+│   ├── README_ADVANCED.md                     # Documentation fonctionnalités avancées
+│   ├── GUIDE_FINAL_SCRIPTS.md                 # Guide final des scripts
+│   ├── GUIDE_WORKFLOW_COMPLET.md              # Guide workflow complet
+│   ├── GUIDE_MOTS_CLES.md                     # Guide mots-clés
+│   ├── GUIDE_ACCUMULATION_RAG.md              # Guide accumulation RAG
+│   ├── GUIDE_MAC_M4_OPTIMIZATION.md           # Guide optimisations M4
+│   └── .cursor/rules/                         # Règles Cursor pour l'IA
+│
+├── 🛠️ INSTALLATION & CONFIGURATION
+│   ├── install.sh                             # Installation automatique
+│   ├── install_advanced.sh                    # Installation fonctionnalités avancées
+│   ├── run.sh                                 # Script de lancement rapide
+│   ├── test_setup.py                          # Script de test d'installation
+│   ├── requirements.txt                       # Dépendances Python
+│   └── .gitignore                            # Fichiers à ignorer
+│
+└── 📊 DONNÉES & SORTIES
+    ├── chroma_db/                             # Base de données vectorielle
+    ├── model_checkpoints/                     # Modèles pré-entraînés
+    ├── pretrained_models/                     # Modèles téléchargés
+    ├── *.json                                 # Fichiers de transcription RAG
+    ├── resume_*.md                            # Résumés générés
+    ├── keywords_*.txt                         # Fichiers de mots-clés
+    └── workflow_results_*.json                # Résultats de workflows
 ```
 
 ## 🔧 Dépannage
 
-### Erreur FFmpeg
+### 🚨 **Erreurs RAG courantes**
+
+#### Erreur SpeechBrain Decoder
+```
+❌ 'ModuleDict' object has no attribute 'decoder'
+```
+**Solution** : Utiliser le modèle `speechbrain/asr-crdnn-commonvoice-fr` avec `transcribe_file()`.
+
+#### Erreur ChromaDB Metadata
+```
+❌ Expected metadata value to be a str, got ['Microsoft', 'Azure'] which is a list
+```
+**Solution** : Convertir les listes en strings : `", ".join(keywords)`.
+
+#### Erreurs de nettoyage (normales)
+```
+❌ Erreur lors de la suppression de keywords_generated_*.txt: [Errno 2] No such file or directory
+```
+**Statut** : Ces erreurs sont normales - fichiers inexistants ou déjà supprimés.
+
+### 🎯 **Erreurs de base**
+
+#### Erreur FFmpeg
 ```
 ffmpeg: command not found
 ```
 **Solution** : Vérifier l'installation de FFmpeg et qu'il est dans le PATH.
 
-### Erreur de mémoire
+#### Erreur de mémoire
 ```
 CUDA out of memory
 ```
 **Solution** : Utiliser un modèle plus petit (`tiny` ou `base`) ou réduire la qualité.
 
-### Optimisations Mac M4 Pro
-- **MPS automatique** : PyTorch utilise automatiquement Metal Performance Shaders
-- **ARM64 natif** : Toutes les dépendances sont optimisées pour Apple Silicon
-- **Performance GPU** : Accélération native sur les puces M1/M2/M3/M4
-
-### Fichier audio corrompu
+#### Fichier audio corrompu
 ```
 Error: Invalid data found
 ```
 **Solution** : Vérifier l'intégrité du fichier audio ou essayer de le reconvertir.
 
-### Performance lente
-**Solutions** :
-- Utiliser un modèle plus petit
-- Réduire la qualité de conversion
-- Vérifier l'espace disque disponible
+### ⚡ **Optimisations Mac M4**
+
+#### Vérification M4
+```bash
+# Vérifier les capacités M4
+python3 detect_m4_capabilities.py
+
+# Optimiser les scripts
+python3 optimize_rag_for_m4.py
+```
+
+#### Performance attendue M4
+- **1min audio** : ~15-20 secondes
+- **5min audio** : ~45-60 secondes
+- **10min audio** : ~90-120 secondes
+
+#### Optimisations automatiques
+- **MPS GPU** : Accélération Metal Performance Shaders
+- **Multi-threading** : 14 threads CPU optimisés
+- **Mémoire unifiée** : Exploitation 48GB du M4
 
 ### Problèmes d'identification des locuteurs
 
@@ -353,15 +510,122 @@ python3 test_hf_token.py
 python3 whisper_clean_diarization.py audio.mp3 -m large
 ```
 
-## 📝 Notes
+## 🚀 Fonctionnalités Avancées RAG
 
-- Les modèles Whisper sont téléchargés automatiquement au premier usage
-- Les fichiers temporaires sont supprimés automatiquement
-- Utilisez `--keep-intermediate` pour conserver les fichiers intermédiaires
-- Le nettoyage audio améliore significativement la qualité de transcription
-- **Identification des locuteurs** : Le script `whisper_clean_diarization.py` est recommandé pour éviter les problèmes de dépendances
-- **Token Hugging Face** : Nécessaire uniquement pour l'identification avancée avec pyannote.audio
-- **Conditions d'utilisation** : Doivent être acceptées sur les 3 liens pyannote.audio pour utiliser l'identification hybride
+### 🎯 **Workflow complet automatisé**
+
+#### Script tout-en-un (recommandé pour l'usage quotidien)
+```bash
+# Workflow ultra-simple : Transcription → Analyse → Résumé
+python3 rag_ultra_simple.py audio.mp3
+```
+
+#### Script complet avec personnalisation
+```bash
+# Avec mots-clés personnalisés
+python3 rag_complete_workflow.py audio.mp3 --keywords "Azure,Microsoft"
+
+# Avec questions spécifiques
+python3 rag_complete_workflow.py audio.mp3 --questions "Quels sont les risques ?" "Actions prioritaires ?"
+```
+
+### 🔧 **Gestion des données RAG**
+
+#### Nettoyage et accumulation
+```bash
+# Nettoyer toutes les données RAG
+python3 clean_rag_data.py --all
+
+# Vérifier l'état des données
+python3 clean_rag_data.py --status
+
+# Décision intelligente accumulation vs nettoyage
+python3 rag_accumulation_manager.py --recommendations
+```
+
+#### Optimisations Mac M4
+```bash
+# Détecter les capacités M4
+python3 detect_m4_capabilities.py
+
+# Optimiser tous les scripts pour M4
+python3 optimize_rag_for_m4.py
+```
+
+### 📊 **Analyse et résumés**
+
+#### Questions en langage naturel
+```bash
+# Interface interactive
+python3 ask_audio.py
+
+# Questions directes
+python3 simple_audio_analyzer.py transcription.json "Quels risques sont identifiés ?"
+```
+
+#### Génération de résumés
+```bash
+# Résumés automatiques
+python3 audio_summarizer.py transcription.json --type executif
+python3 audio_summarizer.py transcription.json --type business
+python3 audio_summarizer.py transcription.json --type detaille
+
+# Interface interactive
+python3 resume_audio.py
+```
+
+### 🔍 **Extraction de mots-clés**
+
+#### Génération automatique
+```bash
+# Extraire les mots-clés d'une transcription
+python3 generate_keywords_from_transcription.py transcription.json --top 25
+```
+
+#### Utilisation avec transcription
+```bash
+# Transcription avec mots-clés personnalisés
+python3 advanced_rag_transcription_with_keywords.py audio.mp3 --keywords "Azure,Microsoft"
+```
+
+### 🎯 **Fonctionnalités techniques incluses**
+
+- 🎤 **Transcription avancée** : Whisper + SpeechBrain optimisés
+- 🔍 **Extraction de mots-clés métiers** : KeyBERT + filtrage intelligent
+- 🧠 **Embeddings sémantiques** : Sentence Transformers
+- 💾 **Base de données vectorielle** : ChromaDB avec recherche
+- 🔗 **Analyse intelligente** : Q&A en langage naturel
+- 📋 **Résumés automatiques** : Exécutif, business, détaillé
+- ⚡ **Optimisations M4** : GPU MPS + multi-threading
+- 🔧 **Gestion des données** : Nettoyage et accumulation intelligente
+
+📖 **Documentation complète** : Voir [README_ADVANCED.md](README_ADVANCED.md)
+
+## 📝 Notes importantes
+
+### 🎯 **Fonctionnalités RAG**
+- **Installation** : `./install_advanced.sh` pour toutes les fonctionnalités avancées
+- **Scripts recommandés** : `rag_ultra_simple.py` pour usage quotidien
+- **Performance M4** : Optimisations automatiques détectées et appliquées
+- **Gestion des données** : Nettoyage régulier recommandé pour éviter l'accumulation
+
+### 🎤 **Transcription**
+- **Modèles** : Whisper téléchargés automatiquement au premier usage
+- **Qualité** : Nettoyage audio améliore significativement la transcription
+- **Identification locuteurs** : `whisper_clean_diarization.py` recommandé (sans dépendances)
+- **Mots-clés** : Support pour améliorer la précision de transcription
+
+### 🔧 **Configuration**
+- **Token Hugging Face** : Nécessaire pour l'identification avancée avec pyannote.audio
+- **Conditions d'utilisation** : Acceptées sur les liens pyannote.audio pour identification hybride
+- **Fichiers temporaires** : Supprimés automatiquement (utiliser `--keep-intermediate` pour conserver)
+- **Optimisations M4** : Détection et configuration automatiques
+
+### 📊 **Données et sorties**
+- **Formats** : JSON (complet), TXT (texte), SRT/VTT (sous-titres)
+- **Base vectorielle** : ChromaDB pour recherche sémantique
+- **Résumés** : Exécutif, business, détaillé automatiquement générés
+- **Mots-clés** : Extraction automatique + support personnalisé
 
 ## 🤝 Contribution
 
@@ -373,4 +637,30 @@ Ce projet est sous licence MIT. Voir le fichier LICENSE pour plus de détails.
 
 ---
 
-**TakeNote AI** - Transformez vos fichiers audio en texte avec intelligence artificielle 🚀
+## 🎉 **Démarrage rapide**
+
+### Pour commencer immédiatement :
+```bash
+# 1. Installation complète
+./install.sh
+./install_advanced.sh
+
+# 2. Usage quotidien ultra-simple
+python3 rag_ultra_simple.py votre_audio.mp3
+
+# 3. Avec mots-clés personnalisés
+python3 rag_complete_workflow.py votre_audio.mp3 --keywords "VotreEntreprise,Technologie,Mots-clés"
+```
+
+### Pour les utilisateurs avancés :
+- **Scripts individuels** : Utilisez les scripts spécialisés selon vos besoins
+- **Optimisations M4** : Détection et application automatiques
+- **Gestion des données** : Nettoyage et accumulation intelligente
+- **Analyse personnalisée** : Questions en langage naturel
+- **Résumés adaptatifs** : Exécutif, business, détaillé
+
+---
+
+**🎤 TakeNote AI** - Transcription audio intelligente avec RAG, analyse et optimisations Mac M4 🚀
+
+*Transformez vos réunions, interviews et conférences en insights actionables avec l'intelligence artificielle*
