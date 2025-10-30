@@ -65,6 +65,30 @@ cd TakeNoteAI
 ./install_advanced.sh  # Pour les fonctionnalités RAG avancées
 ```
 
+### Installation avec uv (alternative moderne)
+```bash
+# 1) Installer uv (macOS)
+# Via Homebrew
+brew install uv
+# ou via script officiel
+# curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# 2) Initialiser le projet (crée pyproject.toml)
+uv init
+
+# 3) Installer les dépendances principales
+uv add openai-whisper ffmpeg-python torch torchaudio chromadb sentence-transformers keybert spacy psutil
+
+# 4) Verrouiller les versions (génère uv.lock)
+uv lock
+
+# 5) Exécuter un script
+uv run python rag_ultra_simple.py audio.mp3
+```
+Notes:
+- Avec uv, `requirements.txt` devient optionnel (uv utilise `pyproject.toml` + `uv.lock`).
+- Conservez `requirements.txt` si vous souhaitez garder la compatibilité `pip`.
+
 ### Installation manuelle
 
 1. **Cloner le projet**
@@ -141,6 +165,8 @@ python test_setup.py
 ```
 
 ## 📖 Utilisation
+
+Astuce uv: vous pouvez remplacer `python3` par `uv run python` (ex: `uv run python rag_ultra_simple.py audio.mp3`).
 
 ### 🚀 **Scripts RAG tout-en-un (recommandés)**
 
@@ -371,7 +397,9 @@ TakeNoteAI/
 │   ├── run.sh                                 # Script de lancement rapide
 │   ├── test_setup.py                          # Script de test d'installation
 │   ├── requirements.txt                       # Dépendances Python
-│   └── .gitignore                            # Fichiers à ignorer
+│   ├── pyproject.toml                         # Dépendances (uv/PEP 621)
+│   ├── uv.lock                                # Verrouillage des versions (uv)
+│   └── .gitignore                             # Fichiers à ignorer
 │
 └── 📊 DONNÉES & SORTIES
     ├── chroma_db/                             # Base de données vectorielle
