@@ -51,19 +51,19 @@ class WhisperSpeakerDiarization:
         if PYANNOTE_AVAILABLE:
             print("🔄 Chargement du modèle pyannote.audio...")
             try:
+                # Désactiver temporairement pyannote.audio à cause de problèmes de compatibilité
+                # avec PyTorch 2.8.0 et torchcodec
+                raise RuntimeError("pyannote.audio temporairement désactivé - problèmes de compatibilité")
+                
                 self.diarization_pipeline = Pipeline.from_pretrained(
                     "pyannote/speaker-diarization-3.1"
                 )
                 self.diarization_pipeline.to(torch.device(self.device))
                 self.pyannote_available = True
             except Exception as e:
-                print(f"⚠️  Erreur lors du chargement de pyannote.audio: {e}")
-                print("💡 Essayez d'accepter les conditions d'utilisation sur Hugging Face:")
-                print("   https://huggingface.co/pyannote/speaker-diarization-3.1")
-                print("💡 Ou utilisez un token Hugging Face avec:")
-                print("   from huggingface_hub import login")
-                print("   login()")
-                print("🔄 Basculement vers la diarisation manuelle...")
+                print(f"⚠️  pyannote.audio non disponible: {str(e)[:100]}")
+                print("💡 Utilisation de la diarisation manuelle optimisée à la place")
+                print("💡 Pour de meilleurs résultats, utilisez whisper_balanced_diarization.py")
                 self.pyannote_available = False
         else:
             print("🔄 pyannote.audio non disponible, utilisation de la diarisation manuelle...")
