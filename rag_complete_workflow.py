@@ -46,14 +46,15 @@ class RAGCompleteWorkflow:
         
         print(f"📁 Fichier audio: {audio_file}")
         
-        # Préparer les mots-clés
+        # Étape de transcription: utiliser le script disponible
+        # Note: le script 'advanced_rag_transcription_with_keywords.py' n'est plus présent.
+        # On bascule vers 'advanced_rag_transcription.py'. Les mots-clés initiaux seront ignorés.
         if initial_keywords:
             keywords_str = ", ".join(initial_keywords)
-            print(f"🔤 Mots-clés initiaux: {keywords_str}")
-            cmd = f'python advanced_rag_transcription_with_keywords.py "{audio_file}" --keywords "{keywords_str}"'
+            print(f"🔤 Mots-clés initiaux fournis (ignorés par ce script): {keywords_str}")
         else:
             print("🔤 Aucun mot-clé initial fourni")
-            cmd = f'python advanced_rag_transcription_with_keywords.py "{audio_file}"'
+        cmd = f'python advanced_rag_transcription.py "{audio_file}"'
         
         print(f"🚀 Commande: {cmd}")
         
@@ -66,7 +67,11 @@ class RAGCompleteWorkflow:
                 print(f"✅ Transcription RAG terminée en {duration:.2f}s")
                 
                 # Trouver le fichier JSON généré
-                json_files = list(Path(".").glob("*advanced_rag*.json"))
+                search_dirs = [Path("output/transcriptions"), Path(".")]
+                json_files = []
+                for d in search_dirs:
+                    if d.exists():
+                        json_files.extend(d.glob("*advanced_rag*.json"))
                 if json_files:
                     # Prendre le plus récent
                     self.json_file = max(json_files, key=lambda x: x.stat().st_mtime)
@@ -126,7 +131,11 @@ class RAGCompleteWorkflow:
                 print(f"✅ Génération de mots-clés terminée en {duration:.2f}s")
                 
                 # Trouver le fichier de mots-clés généré
-                keywords_files = list(Path(".").glob("keywords_generated_*.txt"))
+                search_dirs = [Path("output/keywords"), Path(".")]
+                keywords_files = []
+                for d in search_dirs:
+                    if d.exists():
+                        keywords_files.extend(d.glob("keywords_generated_*.txt"))
                 if keywords_files:
                     self.keywords_file = max(keywords_files, key=lambda x: x.stat().st_mtime)
                     print(f"📝 Fichier mots-clés: {self.keywords_file.name}")
@@ -291,6 +300,136 @@ class RAGCompleteWorkflow:
         
         return len(summary_results) > 0
     
+    def step5_generate_full_transcript(self) -> bool:
+        """Étape 5: Génération du transcript complet."""
+        print(f"\n📄 ÉTAPE 5: Génération du transcript complet")
+        print("=" * 50)
+        
+        if not self.json_file or not self.json_file.exists():
+            print("⚠️  Aucun fichier JSON disponible")
+            return False
+        
+        try:
+            with open(self.json_file, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            
+            # Extraire le texte complet
+            full_text = ""
+            if 'transcription' in data and 'text' in data['transcription']:
+                full_text = data['transcription']['text']
+            elif 'transcription' in data and 'full_text' in data['transcription']:
+                full_text = data['transcription']['full_text']
+            
+            if not full_text:
+                print("⚠️  Aucun texte trouvé dans la transcription")
+                return False
+            
+            # Sauvegarder dans output/transcriptions/
+            transcript_file = Path("output/transcriptions") / f"{self.json_file.stem}_transcript.txt"
+            transcript_file.parent.mkdir(parents=True, exist_ok=True)
+            
+            with open(transcript_file, 'w', encoding='utf-8') as f:
+                f.write(full_text)
+            
+            print(f"✅ Transcript complet sauvegardé : {transcript_file.name}")
+            print(f"📊 Longueur : {len(full_text):,} caractères")
+            
+            self.results['full_transcript'] = {
+                'file': str(transcript_file),
+                'length': len(full_text)
+            }
+            
+            return True
+            
+        except Exception as e:
+            print(f"⚠️  Erreur lors de la génération du transcript : {e}")
+            return False
+    
+    def step6_ai_correction(self, keywords: List[str]) -> bool:
+        """Étape 6: Correction IA guidée par mots-clés."""
+        print(f"\n🤖 ÉTAPE 6: Correction IA guidée par mots-clés")
+        print("=" * 50)
+        
+        # Trouver les fichiers à corriger (résumés + transcript complet)
+        summary_files = list(Path("output/summaries").glob("resume_*.md"))
+        if not summary_files:
+            summary_files = list(Path(".").glob("resume_*.md"))
+        
+        # Trouver aussi le transcript complet si disponible
+        transcript_file = None
+        if self.json_file and self.json_file.exists():
+            transcript_file = Path("output/transcriptions") / f"{self.json_file.stem}_transcript.txt"
+            if not transcript_file.exists():
+                transcript_file = None
+        
+        if not summary_files and not transcript_file:
+            print("⚠️  Aucun fichier trouvé pour correction")
+            return False
+        
+        # Créer un fichier temporaire de mots-clés
+        import tempfile
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False, encoding='utf-8') as f:
+            temp_keywords_file = f.name
+            f.write('\n'.join(keywords))
+        
+        files_to_correct = list(summary_files)
+        if transcript_file:
+            files_to_correct.append(transcript_file)
+        
+        print(f"📝 Correction de {len(files_to_correct)} fichiers...")
+        
+        correction_results = []
+        total_duration = 0
+        
+        for file_to_correct in files_to_correct:
+            print(f"\n   🤖 Correction: {file_to_correct.name}...")
+            
+            cmd = f'python ai_keyword_guided_correction.py "{file_to_correct}" --keywords "{temp_keywords_file}" --inplace'
+            
+            start_time = time.time()
+            try:
+                result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+                duration = time.time() - start_time
+                total_duration += duration
+                
+                if result.returncode == 0:
+                    print(f"   ✅ Correction terminée en {duration:.2f}s")
+                    # Parser le nombre de remplacements du rapport JSON
+                    import re
+                    match = re.search(r'(\d+) remplacements', result.stdout)
+                    num_replacements = int(match.group(1)) if match else 0
+                    correction_results.append({
+                        'file': file_to_correct.name,
+                        'duration': duration,
+                        'replacements': num_replacements
+                    })
+                else:
+                    print(f"   ⚠️  Erreur: {result.stderr}")
+                    
+            except Exception as e:
+                print(f"   ⚠️  Exception: {e}")
+        
+        # Nettoyer le fichier temporaire
+        try:
+            os.unlink(temp_keywords_file)
+        except:
+            pass
+        
+        print(f"\n✅ Corrections IA terminées en {total_duration:.2f}s")
+        
+        total_replacements = sum(r.get('replacements', 0) for r in correction_results)
+        if total_replacements > 0:
+            print(f"📊 Total: {total_replacements} remplacements appliqués")
+        
+        self.results['ai_correction'] = {
+            'duration': total_duration,
+            'files_corrected': len(correction_results),
+            'total_replacements': total_replacements,
+            'results': correction_results
+        }
+        
+        return True
+    
     def run_complete_workflow(self, audio_file: str, initial_keywords: Optional[List[str]] = None,
                             questions: Optional[List[str]] = None, 
                             summary_types: Optional[List[str]] = None,
@@ -320,6 +459,13 @@ class RAGCompleteWorkflow:
         if not self.step4_summaries(summary_types):
             print("❌ Échec de la génération de résumés")
             return False
+        
+        # Étape 5: Génération du transcript complet (optionnelle)
+        self.step5_generate_full_transcript()
+        
+        # Étape 6: Correction IA (optionnelle)
+        if initial_keywords:
+            self.step6_ai_correction(initial_keywords)
         
         total_duration = time.time() - start_time
         
@@ -358,6 +504,16 @@ class RAGCompleteWorkflow:
         if 'summaries' in self.results:
             s = self.results['summaries']
             print(f"📝 Résumés: {s['duration']:.2f}s - {s['types_count']} types générés")
+        
+        # Transcript complet
+        if 'full_transcript' in self.results:
+            ft = self.results['full_transcript']
+            print(f"📄 Transcript complet: {ft['length']:,} caractères")
+        
+        # Correction IA
+        if 'ai_correction' in self.results:
+            ai = self.results['ai_correction']
+            print(f"🤖 Correction IA: {ai['duration']:.2f}s - {ai['total_replacements']} remplacements appliqués sur {ai['files_corrected']} fichiers")
         
         print(f"\n📁 FICHIERS GÉNÉRÉS:")
         print("-" * 30)

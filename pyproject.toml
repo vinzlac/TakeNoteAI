@@ -7,6 +7,9 @@ requires-python = ">=3.13"
 dependencies = [
     "ffmpeg-python>=0.2.0",
     "openai-whisper>=20250625",
+    "pyspellchecker>=0.8.3",
+    "sentencepiece>=0.2.1",
     "torch>=2.9.0",
     "torchaudio>=2.9.0",
+    "transformers>=4.57.1",
 ]
