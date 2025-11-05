@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Script RAG complet tout-en-un pour Mac M4
-Workflow: Audio → RAG → Mots-clés → Analyse → Résumé
+Workflow: Audio → RAG → Mots-clés → Analyse → Résumé → Transcript → Correction IA → Compte rendu email
 """
 
 import os
@@ -12,6 +12,9 @@ import subprocess
 from pathlib import Path
 from typing import Optional, List
 import argparse
+
+# Import du module commun pour la génération de compte rendu email
+from meeting_report_generator import generate_meeting_report_email
 
 # Optimisations M4
 import torch
@@ -430,15 +433,72 @@ class RAGCompleteWorkflow:
         
         return True
     
+    def step7_generate_email_report(self, meeting_title: Optional[str] = None) -> bool:
+        """Étape 7: Génération du compte rendu email."""
+        print(f"\n📧 ÉTAPE 7: Génération du compte rendu email")
+        print("=" * 50)
+        
+        if not self.json_file or not self.json_file.exists():
+            print("⚠️  Aucun fichier JSON disponible")
+            return False
+        
+        print(f"📄 Utilisation de la transcription: {self.json_file.name}")
+        
+        # Générer un titre par défaut si non fourni
+        if not meeting_title:
+            meeting_title = self.json_file.stem.replace("_advanced_rag", "").replace("_", " ")
+        
+        try:
+            start_time = time.time()
+            
+            # Générer le compte rendu email
+            email_report_file = generate_meeting_report_email(
+                transcription_file=self.json_file,
+                meeting_title=meeting_title,
+                output_file=None,  # Génération automatique du chemin
+                cursor_agent_path=None
+            )
+            
+            duration = time.time() - start_time
+            
+            if email_report_file:
+                print(f"✅ Compte rendu email généré en {duration:.2f}s")
+                print(f"📧 Fichier: {email_report_file.name}")
+                
+                # Lire le contenu pour les statistiques
+                with open(email_report_file, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                
+                self.results['email_report'] = {
+                    'duration': duration,
+                    'file': str(email_report_file),
+                    'length': len(content)
+                }
+                
+                return True
+            else:
+                print("⚠️  Échec de la génération du compte rendu email")
+                print("💡 Vérifiez que cursor-agent est installé et accessible")
+                return False
+                
+        except Exception as e:
+            print(f"⚠️  Erreur lors de la génération du compte rendu email : {e}")
+            return False
+    
     def run_complete_workflow(self, audio_file: str, initial_keywords: Optional[List[str]] = None,
                             questions: Optional[List[str]] = None, 
                             summary_types: Optional[List[str]] = None,
-                            top_keywords: int = 25) -> bool:
+                            top_keywords: int = 25,
+                            meeting_title: Optional[str] = None,
+                            generate_email: bool = True) -> bool:
         """Exécute le workflow complet."""
         print("🚀 WORKFLOW RAG COMPLET - Mac M4 Optimisé")
         print("=" * 60)
         
         start_time = time.time()
+        
+        # Sauvegarder le fichier audio pour référence
+        self.audio_file = audio_file
         
         # Étape 1: Transcription RAG
         if not self.step1_rag_transcription(audio_file, initial_keywords):
@@ -466,6 +526,10 @@ class RAGCompleteWorkflow:
         # Étape 6: Correction IA (optionnelle)
         if initial_keywords:
             self.step6_ai_correction(initial_keywords)
+        
+        # Étape 7: Génération du compte rendu email (optionnelle)
+        if generate_email:
+            self.step7_generate_email_report(meeting_title)
         
         total_duration = time.time() - start_time
         
@@ -515,6 +579,11 @@ class RAGCompleteWorkflow:
             ai = self.results['ai_correction']
             print(f"🤖 Correction IA: {ai['duration']:.2f}s - {ai['total_replacements']} remplacements appliqués sur {ai['files_corrected']} fichiers")
         
+        # Compte rendu email
+        if 'email_report' in self.results:
+            email = self.results['email_report']
+            print(f"📧 Compte rendu email: {email['duration']:.2f}s - {email['length']:,} caractères")
+        
         print(f"\n📁 FICHIERS GÉNÉRÉS:")
         print("-" * 30)
         if self.json_file:
@@ -523,10 +592,17 @@ class RAGCompleteWorkflow:
             print(f"🔤 Mots-clés: {self.keywords_file.name}")
         
         # Lister les fichiers de résumé générés
-        summary_files = list(Path(".").glob("resume_*.md"))
+        summary_files = list(Path("output/summaries").glob("resume_*.md"))
+        if not summary_files:
+            summary_files = list(Path(".").glob("resume_*.md"))
         for summary_file in summary_files:
             if summary_file.stat().st_mtime > time.time() - 300:  # Fichiers créés dans les 5 dernières minutes
                 print(f"📝 Résumé: {summary_file.name}")
+        
+        # Lister le compte rendu email généré
+        if 'email_report' in self.results:
+            email_file = Path(self.results['email_report']['file'])
+            print(f"📧 Compte rendu email: {email_file.name}")
         
         print(f"\n🚀 OPTIMISATIONS M4:")
         print("-" * 25)
@@ -560,6 +636,8 @@ Exemples d'utilisation:
   %(prog)s audio.mp3 --questions "Quels risques?" "Actions?"  # Questions personnalisées
   %(prog)s audio.mp3 --summaries executive business     # Types de résumés spécifiques
   %(prog)s audio.mp3 --top-keywords 50                  # Plus de mots-clés générés
+  %(prog)s audio.mp3 --meeting-title "Réunion Tech"     # Avec titre pour le compte rendu email
+  %(prog)s audio.mp3 --no-email                         # Sans génération du compte rendu email
         """
     )
     
@@ -570,6 +648,10 @@ Exemples d'utilisation:
                        help="Types de résumés à générer")
     parser.add_argument("--top-keywords", type=int, default=25,
                        help="Nombre de mots-clés à générer (défaut: 25)")
+    parser.add_argument("--meeting-title", type=str,
+                       help="Titre de la réunion (pour le compte rendu email)")
+    parser.add_argument("--no-email", action="store_true",
+                       help="Désactiver la génération du compte rendu email")
     
     args = parser.parse_args()
     
@@ -592,7 +674,9 @@ Exemples d'utilisation:
             initial_keywords=initial_keywords,
             questions=questions,
             summary_types=summary_types,
-            top_keywords=top_keywords
+            top_keywords=top_keywords,
+            meeting_title=args.meeting_title,
+            generate_email=not args.no_email
         )
         
         if success:
