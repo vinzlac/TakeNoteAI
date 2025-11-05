@@ -122,6 +122,32 @@ def clean_html_output(html_content: str) -> str:
     return html_content.strip()
 
 
+def check_cursor_agent_auth(cursor_agent_path: Optional[str] = None) -> bool:
+    """Vérifie si cursor-agent est authentifié."""
+    cmd_base = cursor_agent_path if cursor_agent_path else 'cursor-agent'
+    
+    try:
+        result = subprocess.run(
+            [cmd_base, 'status'],
+            capture_output=True,
+            text=True,
+            timeout=10
+        )
+        
+        # Chercher des indicateurs d'authentification réussie
+        output = result.stdout + result.stderr
+        if 'Logged in' in output or '✓' in output or 'authenticated' in output.lower():
+            return True
+        elif 'not authenticated' in output.lower() or 'not logged' in output.lower():
+            return False
+        # Si la commande fonctionne, on assume que c'est OK
+        return result.returncode == 0
+        
+    except Exception as e:
+        print(f"⚠️  Erreur lors de la vérification de l'authentification: {e}")
+        return False
+
+
 def call_cursor_agent(prompt: str, cursor_agent_path: Optional[str] = None) -> Optional[str]:
     """Appelle cursor-agent avec le prompt fourni."""
     
@@ -144,6 +170,19 @@ def call_cursor_agent(prompt: str, cursor_agent_path: Optional[str] = None) -> O
             return None
     except Exception as e:
         print(f"⚠️  Erreur lors de la vérification de cursor-agent: {e}")
+    
+    # Vérifier l'authentification
+    print("🔐 Vérification de l'authentification cursor-agent...")
+    if not check_cursor_agent_auth(cursor_agent_path):
+        print("❌ cursor-agent n'est pas authentifié")
+        print("\n💡 Pour vous authentifier, exécutez :")
+        print("   cursor-agent login")
+        print("\n   Ou utilisez une clé API avec :")
+        print("   export CURSOR_API_KEY=votre_cle_api")
+        print("   cursor-agent --api-key votre_cle_api")
+        return None
+    
+    print("✅ Authentification cursor-agent vérifiée")
     
     # Pour les prompts très longs, utiliser un fichier temporaire
     # Les limites de ligne de commande peuvent être dépassées

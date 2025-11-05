@@ -2,6 +2,11 @@
 """
 Script pour générer un compte rendu de réunion formaté pour email
 en utilisant cursor-agent à partir d'un fichier de transcription.
+
+PRÉREQUIS:
+- cursor-agent doit être installé et authentifié
+- Pour s'authentifier: cursor-agent login
+- Ou utiliser une clé API: export CURSOR_API_KEY=votre_cle_api
 """
 
 import sys

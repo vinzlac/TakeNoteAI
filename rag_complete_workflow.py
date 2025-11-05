@@ -2,6 +2,12 @@
 """
 Script RAG complet tout-en-un pour Mac M4
 Workflow: Audio → RAG → Mots-clés → Analyse → Résumé → Transcript → Correction IA → Compte rendu email
+
+PRÉREQUIS pour la génération du compte rendu email:
+- cursor-agent doit être installé et authentifié
+- Pour s'authentifier: cursor-agent login
+- Ou utiliser une clé API: export CURSOR_API_KEY=votre_cle_api
+- Utiliser --no-email pour désactiver cette étape si cursor-agent n'est pas disponible
 """
 
 import os
