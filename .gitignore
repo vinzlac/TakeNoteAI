@@ -93,9 +93,12 @@ test_output/
 *.bak
 *.backup
 
-# Répertoires centralisés
-output/
-input/
+# Répertoires centralisés (ignorer TOUT le contenu sauf les .gitkeep)
+output/**
+!output/.gitkeep
+!output/**/.gitkeep
+input/**
+!input/.gitkeep
 
 # Base de données vectorielle ChromaDB
 chroma_db/

@@ -501,11 +501,11 @@ Exemples d'utilisation:
             if args.output:
                 output_file = args.output
             else:
-                filename = "resume_executif.md"
-                if OUTPUT_MANAGER:
-                    output_file = str(OUTPUT_MANAGER.get_summary_path(filename))
-                else:
-                    output_file = filename
+                # Générer dans output/reports/action.md au lieu de summaries/
+                filename = "action.md"
+                reports_dir = Path("output/reports")
+                reports_dir.mkdir(parents=True, exist_ok=True)
+                output_file = str(reports_dir / filename)
         elif args.type == "detailed":
             summary = summarizer.generate_detailed_summary()
             if args.output:
